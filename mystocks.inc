@@ -37,8 +37,6 @@
 #include <cstrike>
 #include <sdkhooks>
 
-bool IPAktif;
-
 /*
 ** Kullanıcı valid mi diye kontrol eder
 **
@@ -1496,3 +1494,61 @@ stock void ExecuteCommand(int client, const char[] command)
 		SetUserAdmin(client, Group);
 	}
 }
+
+/*
+** 
+**
+** 
+**		Win paneli silersin.
+** 
+** 
+**/
+
+stock void WinPanelDelete()
+{
+	Event newevent_round = CreateEvent("round_start");
+	
+	for (int z = 1; z <= MaxClients; z++)
+	if (IsClientInGame(z) && !IsFakeClient(z))
+		newevent_round.FireToClient(z);
+	
+	newevent_round.Cancel();
+}
+
+/*
+** 
+**
+** 
+** 		Show statusun birazcık gelişmişi
+** 		WinPanelMessage(-1, "31", 10.0);
+** 		2-3 saniye gecikmeli geliyor hold süresine o kadar eklersin 2 3 saniye ekle
+**
+**/
+
+stock void WinPanelMessage(int client = -1, const char[] message = NULL_STRING, float hold = 1.0)
+{
+	Event newevent_message = CreateEvent("cs_win_panel_round");
+	newevent_message.SetString("funfact_token", message);
+	if (client == -1)
+	{
+		for (int i = 1; i <= MaxClients; i++)
+		{
+			if (IsClientInGame(i) && !IsFakeClient(i))
+			{
+				newevent_message.FireToClient(i);
+			}
+		}
+	}
+	else
+	{
+		if (!IsFakeClient(client))
+			newevent_message.FireToClient(client);
+	}
+	CreateTimer(hold, deletewinpanel, _, TIMER_FLAG_NO_MAPCHANGE);
+	newevent_message.Cancel();
+}
+
+public Action deletewinpanel(Handle timer)
+{
+	WinPanelDelete();
+} 
