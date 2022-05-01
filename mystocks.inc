@@ -22,6 +22,27 @@
 #define MAX_WEAPON_PREFIX		16
 #define MAX_WEAPON_AMMO_NAME	32
 
+#define MAX_EDICTS      2048
+#define MAX_ENTITIES    4096
+
+#define CVAR_LENGTH 128
+
+#define MAX_CVARS 128
+
+#define HIDEHUD_WEAPONSELECTION     (1 << 0)
+#define HIDEHUD_FLASHLIGHT          (1 << 1)
+#define HIDEHUD_ALL                 (1 << 2)
+#define HIDEHUD_HEALTH              (1 << 3)	
+#define HIDEHUD_PLAYERDEAD          (1 << 4)
+#define HIDEHUD_NEEDSUIT            (1 << 5)
+#define HIDEHUD_MISCSTATUS          (1 << 6)
+#define HIDEHUD_CHAT                (1 << 7)
+#define HIDEHUD_CROSSHAIR           (1 << 8)
+#define HIDEHUD_VEHICLE_CROSSHAIR   (1 << 9)
+#define HIDEHUD_INVEHICLE           (1 << 10)
+#define HIDEHUD_BONUS_PROGRESS      (1 << 11)
+#define HIDEHUD_BITCOUNT            12
+
 #define LoopClients(%1) for (int %1 = 1; %1 <= MaxClients; %1++) if (IsClientInGame(%1))
 #define LoopClientsT(%1) for (int %1 = 1; %1 <= MaxClients; %1++) if (IsClientInGame(%1) && GetClientTeam(%1) == CS_TEAM_T)
 #define LoopClientsCT(%1) for (int %1 = 1; %1 <= MaxClients; %1++) if (IsClientInGame(%1) && GetClientTeam(%1) == CS_TEAM_CT)
@@ -1552,3 +1573,61 @@ public Action deletewinpanel(Handle timer)
 {
 	WinPanelDelete();
 } 
+
+stock bool IsConVarDefault(ConVar convar)
+{
+	char sDefaultVal[16], sCurrentVal[16];
+	GetConVarDefault(convar, sDefaultVal, sizeof(sDefaultVal));
+	GetConVarString(convar, sCurrentVal, sizeof(sCurrentVal));
+
+	return StrEqual(sDefaultVal, sCurrentVal);
+}
+
+stock bool GetClientAbsVelocity(int client, float velocity[3])
+{
+	static int offset = -1;
+
+	if (offset == -1 && (offset = FindDataMapInfo(client, "m_vecAbsVelocity")) == -1)
+	{
+		ZeroVector(velocity);
+		return false;
+	}
+
+	GetEntDataVector(client, offset, velocity);
+	return true;
+}
+
+stock int GetClientHudFlags(int client)
+{
+	return GetEntProp(client, Prop_Send, "m_iHideHUD");
+}
+
+stock void ZeroVector(float vec[3])
+{
+	vec[0] = vec[1] = vec[2] = 0.0;
+}
+
+stock bool IsVectorZero(const float vec[3])
+{
+	return vec[0] == 0.0 && vec[1] == 0.0 && vec[2] == 0.0;
+}
+
+stock any MinValue(any value, any min)
+{
+	return (value < min) ? min : value;
+}
+
+stock any MaxValue(any value, any max)
+{
+	return (value > max) ? max : value;
+}
+
+stock int GetFov(int client)
+{
+	return GetEntProp(client, Prop_Send, "m_iFOV");
+}
+
+stock void SetFov(int client, int fov)
+{
+	SetEntProp(client, Prop_Send, "m_iFOV", fov);
+}
